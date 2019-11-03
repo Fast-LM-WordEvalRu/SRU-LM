@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+# Author: https://github.com/toobaz/ipynb_output_filter/blob/master/ipynb_output_filter.py
+
 import sys
 
 try:
