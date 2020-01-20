@@ -1,12 +1,11 @@
-"""
-Датасет, который
-"""
+#   Author: Artem Skiba
+#   Created: 20/01/2020
 
 import linecache
 import numpy as np
 from torch.utils.data import Dataset
 
-from src.core.utils import split, raw_count
+from fast_elmo.core.utils import split, raw_count
 from .vectorizer import Vectorizer
 
 

@@ -1,3 +1,6 @@
+#   Author: Artem Skiba
+#   Created: 20/01/2020
+
 import sys
 
 import sru

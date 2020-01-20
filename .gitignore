@@ -1,7 +1,7 @@
 notebooks/*
 reports/.ipynb_checkpoints
-src/.idea
-src/__pycache__/
+fast_elmo/.idea
+fast_elmo/__pycache__/
 models/*
 .ipynb_checkpoints
 .idea

@@ -1,20 +1,22 @@
-"""
-Vectorizer: класс, осуществляющий преобразование текстовой строки в последовательность чисел.
-Также он гарантирует, что эти последовательности чисел будут иметь одну и ту же длину
-(сейчас это реализовано очень костыльно, в будущем нужно будет сделать гибкое изменение размера).
-Осуществляет часть работы "подсчет частот встречаемости слов, выкидывание редких слов и создание Vocabulary"
-"""
+#   Author: Artem Skiba
+#   Created: 20/01/2020
+
 from collections import defaultdict
 from pathlib import Path
 
 from tqdm import tqdm
 
-from src.core.utils import split
+from fast_elmo.core.utils import split
 from .vocabulary import Vocabulary
 
 
 class Vectorizer(object):
-    """ The Vectorizer which coordinates the Vocabularies and puts them to use"""
+    """
+    Vectorizer: класс, осуществляющий преобразование текстовой строки в последовательность чисел.
+    Также он гарантирует, что эти последовательности чисел будут иметь одну и ту же длину
+    (сейчас это реализовано очень костыльно, в будущем нужно будет сделать гибкое изменение размера).
+    Осуществляет часть работы "подсчет частот встречаемости слов, выкидывание редких слов и создание Vocabulary"
+    """
 
     def __init__(self, train_vocab: Vocabulary, num_samples: int):
         self.train_vocab = train_vocab

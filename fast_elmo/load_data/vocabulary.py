@@ -1,12 +1,11 @@
-"""
-Vocabulary: класс, который осуществляет преобразование слова в число.
-Сейчас этот класс будет просто оберткой над словарем.
-"""
+#   Author: Artem Skiba
+#   Created: 20/01/2020
 
 
 class Vocabulary(object):
     """
-    Class for transforming word to word index
+    Vocabulary: класс, который осуществляет преобразование слова в число.
+    Сейчас этот класс будет просто оберткой над словарем.
     """
     # TODO: use DefaultDict instead of Dict
     # TODO: use '[]' operators instead of add_token and lookup_token methods

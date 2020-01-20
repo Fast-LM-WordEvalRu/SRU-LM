@@ -1,3 +1,6 @@
+#   Author: Artem Skiba
+#   Created: 20/01/2020
+
 from pathlib import Path
 
 from torch.utils.data import DataLoader
@@ -34,7 +37,8 @@ class BatchGenerator(object):
         for data_dict in self.__train_dataloader:
             out_data_dict = {}
             for name, tensor in data_dict.items():
-                out_data_dict[name] = data_dict[name].to(self.device)
+                # out_data_dict[name] = data_dict[name].to(self.device)
+                out_data_dict[name] = data_dict[name]
             yield out_data_dict
 
     def generate_dev_batch(self):
@@ -43,7 +47,7 @@ class BatchGenerator(object):
             for name, tensor in data_dict.items():
                 out_data_dict[name] = data_dict[name].to(self.device)
             yield out_data_dict
-            
+
     def generate_test_batch(self):
         for data_dict in self.__test_dataloader:
             out_data_dict = {}
