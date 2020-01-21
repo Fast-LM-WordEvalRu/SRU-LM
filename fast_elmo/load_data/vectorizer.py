@@ -37,7 +37,10 @@ class Vectorizer(object):
             vectorized_text.append(word_idx)
 
         vectorized_text.append(self.train_vocab.end_index)
-        vectorized_text.extend([0] * (max_text_len - len(vectorized_text)))
+        if len(vectorized_text) > max_text_len:
+            vectorized_text = vectorized_text[:max_text_len]
+        else:
+            vectorized_text.extend([0] * (max_text_len - len(vectorized_text)))
 
         return vectorized_text
 
