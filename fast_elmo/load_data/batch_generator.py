@@ -31,6 +31,8 @@ class BatchGenerator(object):
         self.__test_dataloader = DataLoader(dataset=test_dataset, batch_size=batch_size,
                                             shuffle=shuffle, drop_last=drop_last)
 
+        self.train_vectorizer = train_vectorizer
+
         self.train_generator = None
         self.dev_generator = None
         self.test_generator = None
