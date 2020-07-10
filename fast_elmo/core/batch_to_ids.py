@@ -13,6 +13,7 @@ class TextTransformer:
     def __init__(self):
         self.max_characters_per_token = 25  # в русском языке почти нет слов длиннее 20 букв
         self.model_char_dict = TextTransformer.__build_char_dict()
+        self.max_char_idx = max(self.model_char_dict.values())
 
     def batch_to_ids(self, batch):
         sentence_ids = [self.sentence_to_ids(sentence) for sentence in batch]
