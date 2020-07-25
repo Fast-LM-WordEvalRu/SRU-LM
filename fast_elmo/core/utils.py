@@ -2,17 +2,7 @@
 #   Created: 20/01/2020
 
 from pathlib import Path
-import re
 from typing import Union
-
-
-def split(text: str) -> list:
-    """
-    split text using search by regexes
-    :param text: text to be splitted
-    :return: list of tokens
-    """
-    return re.findall(r'[\w\d]+', text.lower())
 
 
 def raw_count(filename: Union[str, Path]) -> int:

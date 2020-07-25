@@ -1,28 +1,36 @@
-#   Author: Artem Skiba
-#   Created: 20/01/2020
-
 import linecache
-import numpy as np
+
+import nltk
+import torch
 from torch.utils.data import Dataset
 
-from fast_elmo.core.utils import split, raw_count
-from .vectorizer import Vectorizer
+from ..core.utils import raw_count
 
 
 class FastDataset(Dataset):
-    def __init__(self, filename, vectorizer):
+    def __init__(self, filename, word_dict, n_samples=None, add_backward_target=False):
         self._filename = str(filename)
-        self._vectorizer = vectorizer
-        self._total_data = raw_count(filename)
+        self.word_dict = word_dict
+        self.add_backward_target = add_backward_target
+        if n_samples is None:
+            self._total_data = raw_count(filename)
+        else:
+            self._total_data = n_samples
 
     def __getitem__(self, idx):
-        line = ' '.join(split(linecache.getline(self._filename, idx + 1)))
-        line_vectorized = self._vectorizer.vectorize(line)
+        line = linecache.getline(self._filename, idx + 1)
+        splitted_line = nltk.tokenize.word_tokenize(line)
 
-        return {'raw_text': line,
-                'forward_target': np.array(line_vectorized[1:] + [0]),
-                'backward_target': np.array([0] + line_vectorized[:-1])
-                }
+        forward_target = [self.word_dict[w] for w in splitted_line]
+        forward_target += [self.word_dict['EOS'], self.word_dict['PAD']]
+
+        if self.add_backward_target:
+            pass  # TODO add backward target
+
+        return {
+            'raw_text': splitted_line,
+            'forward_target': torch.LongTensor(forward_target)
+        }
 
     def __len__(self):
         return self._total_data
