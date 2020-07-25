@@ -12,7 +12,7 @@ def batch_to_ids(batch):
 class TextTransformer:
     def __init__(self):
         self.max_characters_per_token = 25  # в русском языке почти нет слов длиннее 20 букв
-        self.model_char_dict = TextTransformer.__build_char_dict()
+        self.model_char_dict = TextTransformer.build_char_dict()
         self.max_char_idx = max(self.model_char_dict.values())
 
     def batch_to_ids(self, batch):
@@ -60,10 +60,11 @@ class TextTransformer:
         return ids[:self.max_characters_per_token]
 
     @staticmethod
-    def __build_char_dict():
+    def build_char_dict():
         cyrillic = set()
         latin = set()
-        punctuation = set('.,;:!?;…‐-‑‒–—―[](){}⟨⟩„“«»“”‘’‹›\'\"')
+        punctuation = set('.,;:!?;…‐-‑‒–—―[](){}⟨⟩„“«»“”‘’‹›\'\"&%@#$*№')
+        numbers = set('0123456789')
 
         for i in range(2000):
             if re.match(r'[a-zA-Z]', chr(i)):
@@ -75,7 +76,7 @@ class TextTransformer:
         assert len(latin) == 52
 
         # приводим к списку и сортируем. Это нужно для воспроизводимости
-        model_chars = cyrillic | latin | punctuation
+        model_chars = cyrillic | latin | punctuation | numbers
         model_chars = list(model_chars)
         model_chars.sort()
 

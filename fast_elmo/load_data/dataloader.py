@@ -14,7 +14,7 @@ class SequencePadder:
         ids, mask = batch_to_ids(text_batch)
         target_key = 'target' if 'target' in batch[0].keys() else 'forward_target'
         targets = [b[target_key] for b in batch]
-        targets = pad_sequence(targets, padding_value=self.word_dict['PAD'], batch_first=True)
+        targets = pad_sequence(targets, padding_value=self.word_dict['<PAD>'], batch_first=True)
 
         return ids, mask, targets
 
