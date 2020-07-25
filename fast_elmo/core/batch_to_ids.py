@@ -18,7 +18,6 @@ class TextTransformer:
     def batch_to_ids(self, batch):
         sentence_ids = [self.sentence_to_ids(sentence) for sentence in batch]
         max_sentence_len = max(len(s) for s in sentence_ids)
-        # max_sentence_len = 30  # средняя длина предложения в русском языке -- примерно 10 слов. Тут большой запас
 
         mask = []
         ids = []

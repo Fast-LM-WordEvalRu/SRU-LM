@@ -23,7 +23,7 @@ class NERDataset(Dataset):
 
         with open(path_to_conll_file) as f:
             text = []
-            text_targets = []
+            text_targets = [0]
             for line in f.readlines():
                 line = line.strip()
                 if line:
@@ -32,9 +32,10 @@ class NERDataset(Dataset):
                     text_targets.append(labels_dict.get(splitted_line[-1], 0))
                 else:
                     texts.append(text)
+                    text_targets.append(0)
                     targets.append(text_targets)
                     text = []
-                    text_targets = []
+                    text_targets = [0]
 
         texts = texts[1:]
         targets = targets[1:]
