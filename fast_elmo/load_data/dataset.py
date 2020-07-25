@@ -21,7 +21,9 @@ class FastDataset(Dataset):
         line = linecache.getline(self._filename, idx + 1)
         splitted_line = nltk.tokenize.word_tokenize(line)
 
-        forward_target = [self.word_dict[w] for w in splitted_line]
+        unk = self.word_dict['UNK']
+
+        forward_target = [self.word_dict.get(w, unk) for w in splitted_line]
         forward_target += [self.word_dict['EOS'], self.word_dict['PAD']]
 
         if self.add_backward_target:
@@ -34,3 +36,4 @@ class FastDataset(Dataset):
 
     def __len__(self):
         return self._total_data
+
