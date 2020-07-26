@@ -18,7 +18,7 @@ char_embedder_params = {
     'n_highway': 2,
     'output_dim': 512}
 
-batch_size = 32
+batch_size = 64
 
 sru_model_params = {
     'backward': False,

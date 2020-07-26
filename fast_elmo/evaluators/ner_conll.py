@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn.metrics import f1_score
+from tqdm import tqdm, trange
 import torch
 from torch.optim import Adam
 
@@ -15,8 +16,8 @@ class EvaluatorNER:
         train_dataset = NERDataset(path_to_ner / 'train.txt')
         test_dataset = NERDataset(path_to_ner / 'test.txt')
 
-        self.train_dataloader = get_dataloader(train_dataset, {'PAD': 0})
-        self.test_dataloader = get_dataloader(test_dataset, {'PAD': 0})
+        self.train_dataloader = get_dataloader(train_dataset, {'<PAD>': 0})
+        self.test_dataloader = get_dataloader(test_dataset, {'<PAD>': 0})
 
         self.head = torch.nn.Sequential(
             torch.nn.Linear(in_features=512, out_features=11)  # у нас 11 уникальных меток для слов
@@ -29,9 +30,9 @@ class EvaluatorNER:
 
     def train(self):
         history = []
-        for epoch in range(self.train_epochs):
+        for epoch in trange(self.train_epochs, desc='NER Train Epochs', leave=False):
             losses = []
-            for batch in self.train_dataloader:
+            for batch in tqdm(self.train_dataloader, desc='NER train batch', leave=False):
                 self.optimizer.zero_grad()
 
                 ids, mask, targets = batch
@@ -55,18 +56,22 @@ class EvaluatorNER:
     def evaluate(self):
         preds = []
         ground_truth = []
+        losses = []
         with torch.no_grad():
-            for batch in self.test_dataloader:
+            for batch in tqdm(self.test_dataloader, desc='NER eval batch', leave=False):
                 ids, mask, targets = batch
 
                 ids = ids.to(self.device)
                 mask = mask.to(self.device)
-                targets = targets.flatten()
+                targets = targets.flatten().to(self.device)
 
                 model_out = self.lm_model(ids, mask)
                 out = self.head(model_out).flatten(0, 1)
 
-                ground_truth.append(targets)
+                loss = self.loss_func(out, targets)
+                losses.append(loss.item())
+
+                ground_truth.append(targets.cpu())
                 preds.append(out)
 
         preds = np.hstack([p.argmax(axis=1).cpu().numpy() for p in preds])
@@ -75,4 +80,4 @@ class EvaluatorNER:
         f1 = f1_score(y_true=ground_truth, y_pred=preds,
                       average='weighted', labels=np.arange(1, 11), zero_division=0)
 
-        return f1
+        return losses, f1
