@@ -52,7 +52,9 @@ if __name__ == '__main__':
     writer = SummaryWriter()
     # writer = WriterMock()
 
-    n_epochs = 3
+    n_epochs = 10
+
+    path_to_save_model = 'forward_lm'
 
     for epoch in trange(n_epochs, desc='Epochs'):
         # Language model
@@ -75,5 +77,12 @@ if __name__ == '__main__':
                            epoch)
 
         writer.add_scalar('NER/eval F1 score', np.mean(f1), epoch)
+
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss,
+        }, path_to_save_model)
 
     writer.close()
