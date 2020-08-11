@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     loss = AdaptiveLogSoftmaxWithLoss(in_features=512, n_classes=len(word_dict.values()),
                                       cutoffs=[100, 1000, 5000]).cuda()
-    optimizer = Adam(model.parameters(), lr=1e-3)
+    optimizer = Adam(model.parameters(), lr=1e-5)
 
     writer = SummaryWriter()
     # writer = WriterMock()
