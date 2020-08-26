@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from fast_elmo.load_data.dataset import FastDataset
 from fast_elmo.load_data.dataloader import get_dataloader
-from fast_elmo.models.forward_sru import ForwardModel
+from fast_elmo.models.one_directional_sru import OneDirectionalSRUModel
 from fast_elmo.models.trainer import train_language_model, evaluate_language_model
 from fast_elmo.evaluators.ner_conll import EvaluatorNER
 
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     train_dataloader = get_dataloader(train_dataset, word_dict)
     dev_dataloader = get_dataloader(dev_dataset, word_dict)
 
-    model = ForwardModel().cuda()
+    model = OneDirectionalSRUModel().cuda()
 
     path_to_ner = Path('/home/artem/DataScience/WordEvalRu/data/fact-ru-eval/')
     evaluator = EvaluatorNER(path_to_ner, model)

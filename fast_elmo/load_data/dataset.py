@@ -32,9 +32,9 @@ class FastDataset(Dataset):
         }
 
         if self.add_backward_target:
-            backward_target = word_indices[::-1] + [self.word_dict['<PAD>'], self.word_dict['<BOS>']]
+            backward_target = word_indices[::-1] + [self.word_dict['<BOS>'], self.word_dict['<PAD>']]
             item_dict['backward_text'] = splitted_line[::-1]
-            item_dict['backward_target'] = backward_target
+            item_dict['backward_target'] = torch.LongTensor(backward_target)
 
         return item_dict
 
