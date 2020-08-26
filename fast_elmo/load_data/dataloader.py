@@ -33,9 +33,9 @@ class SequencePadder:
         return out_dict
 
 
-def get_dataloader(dataset, word_dict):
+def get_dataloader(dataset, word_dict, bidirectional=False):
     dataloader = DataLoader(dataset, batch_size=batch_size,
                             shuffle=False, num_workers=4,
-                            collate_fn=SequencePadder(word_dict))
+                            collate_fn=SequencePadder(word_dict, bidirectional))
 
     return dataloader
