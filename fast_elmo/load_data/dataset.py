@@ -27,13 +27,13 @@ class FastDataset(Dataset):
         forward_target = word_indices + [self.word_dict['<EOS>'], self.word_dict['<PAD>']]
 
         item_dict = {
-            'raw_text': splitted_line,
+            'forward_text': splitted_line,
             'forward_target': torch.LongTensor(forward_target)
         }
 
         if self.add_backward_target:
-            backward_target = [self.word_dict['<PAD>'], self.word_dict['<BOS>']]
-            backward_target += word_indices
+            backward_target = word_indices[::-1] + [self.word_dict['<PAD>'], self.word_dict['<BOS>']]
+            item_dict['backward_text'] = splitted_line[::-1]
             item_dict['backward_target'] = backward_target
 
         return item_dict
