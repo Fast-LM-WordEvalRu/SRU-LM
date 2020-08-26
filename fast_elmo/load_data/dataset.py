@@ -23,17 +23,20 @@ class FastDataset(Dataset):
 
         unk = self.word_dict['<UNK>']
 
-        forward_target = [self.word_dict.get(w, unk) for w in splitted_line]
-        forward_target += [self.word_dict['<EOS>'], self.word_dict['<PAD>']]
+        word_indices = [self.word_dict.get(w, unk) for w in splitted_line]
+        forward_target = word_indices + [self.word_dict['<EOS>'], self.word_dict['<PAD>']]
 
-        if self.add_backward_target:
-            pass  # TODO add backward target
-
-        return {
+        item_dict = {
             'raw_text': splitted_line,
             'forward_target': torch.LongTensor(forward_target)
         }
 
+        if self.add_backward_target:
+            backward_target = [self.word_dict['<PAD>'], self.word_dict['<BOS>']]
+            backward_target += word_indices
+            item_dict['backward_target'] = backward_target
+
+        return item_dict
+
     def __len__(self):
         return self._total_data
-
