@@ -17,7 +17,7 @@ class TextTransformer:
 
     def batch_to_ids(self, batch):
         sentence_ids = [self.sentence_to_ids(sentence) for sentence in batch]
-        max_sentence_len = max(len(s) for s in sentence_ids)
+        max_sentence_len = max(len(s) for s in sentence_ids)+1
 
         mask = []
         ids = []

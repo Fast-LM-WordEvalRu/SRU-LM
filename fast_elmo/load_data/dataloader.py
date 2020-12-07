@@ -6,36 +6,36 @@ from fast_elmo.config import batch_size
 
 
 class SequencePadder:
-    def __init__(self, word_dict, bidirectional=False):
-        self.word_dict = word_dict
+    def __init__(self, padding_value, bidirectional):
         self.bidirectional = bidirectional
-
-    def process_batch_single_direction(self, batch, direction='forward'):
-        text_batch = [b[f'{direction}_text'] for b in batch]
-        ids, mask = batch_to_ids(text_batch)
-        targets = [b[f'{direction}_target'] for b in batch]
-        targets = pad_sequence(targets, padding_value=self.word_dict['<PAD>'], batch_first=True)
-        return ids, mask, targets
-
+        self.padding_value = padding_value
+    
     def __call__(self, batch):
-        out_dict = {}
+        texts = [b['text'] for b in batch]
+        word_indices = [b['word_indices'] for b in batch]
 
-        directions = ['forward']
+        text_ids, mask = batch_to_ids(texts)
+        padded_word_indices = pad_sequence(word_indices, padding_value=self.padding_value, batch_first=True)
+        forward_target = padded_word_indices.roll(-1, [1])
+        forward_target[:, -1] = forward_target[:, -2]
+
+        out_dict = {
+            'ids': text_ids,
+            'mask': mask,
+            'forward_target': forward_target
+        }
+
         if self.bidirectional:
-            directions.append('backward')
-
-        for direction in directions:
-            ids, mask, targets = self.process_batch_single_direction(batch, direction)
-            out_dict[f'{direction}_ids'] = ids
-            out_dict[f'{direction}_mask'] = mask
-            out_dict[f'{direction}_targets'] = targets
-
+            backward_target = padded_word_indices.roll(1, [1])
+            out_dict['backward_target'] = backward_target
+        
         return out_dict
+
 
 
 def get_dataloader(dataset, word_dict, bidirectional=False):
     dataloader = DataLoader(dataset, batch_size=batch_size,
                             shuffle=False, num_workers=4,
-                            collate_fn=SequencePadder(word_dict, bidirectional))
+                            collate_fn=SequencePadder(padding_value=word_dict['<PAD>'], bidirectional=bidirectional))
 
     return dataloader

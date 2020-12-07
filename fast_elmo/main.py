@@ -10,7 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 
 from fast_elmo.load_data.dataset import FastDataset
 from fast_elmo.load_data.dataloader import get_dataloader
-from fast_elmo.models.one_directional_sru import OneDirectionalSRUModel
+from fast_elmo.models.bidirectional_lm import BidirectionalLM
 from fast_elmo.models.trainer import train_language_model, evaluate_language_model
 from fast_elmo.evaluators.ner_conll import EvaluatorNER
 
@@ -34,32 +34,38 @@ if __name__ == '__main__':
     with (path_to_data / 'lentaru_word_dict.json').open() as f:
         word_dict = json.load(f)
 
-    train_dataset = FastDataset(path_to_data / 'train.txt', word_dict)  # , n_samples=512)
-    dev_dataset = FastDataset(path_to_data / 'dev.txt', word_dict)  # , n_samples=512)
+    train_dataset = FastDataset(path_to_data / 'train.txt', word_dict, n_samples=100_000)
+    dev_dataset = FastDataset(path_to_data / 'dev.txt', word_dict, n_samples=1_000)
 
-    train_dataloader = get_dataloader(train_dataset, word_dict)
-    dev_dataloader = get_dataloader(dev_dataset, word_dict)
+    train_dataloader = get_dataloader(train_dataset, word_dict, bidirectional=True)
+    dev_dataloader = get_dataloader(dev_dataset, word_dict, bidirectional=True)
 
-    model = OneDirectionalSRUModel().cuda()
+    model = BidirectionalLM().cuda()
 
-    path_to_ner = Path('/home/artem/DataScience/WordEvalRu/data/fact-ru-eval/')
-    evaluator = EvaluatorNER(path_to_ner, model)
+    path_to_ner = Path('/home/artem/DataScience/Wikiner/')
+    ner_labels = ['O', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC', 'B-ORG', 'I-ORG', 'B-PER', 'I-PER']
+    evaluator = EvaluatorNER(path_to_ner, ner_labels, model, batch_size=16, train_epochs=3)
 
-    loss = AdaptiveLogSoftmaxWithLoss(in_features=512, n_classes=len(word_dict.values()),
-                                      cutoffs=[100, 1000, 5000]).cuda()
-    optimizer = Adam(model.parameters(), lr=1e-5)
+    cutoffs = [100, 1000, 5000]
+
+    loss_forward = AdaptiveLogSoftmaxWithLoss(in_features=512, n_classes=len(word_dict.values()), cutoffs=cutoffs)
+    loss_backward = AdaptiveLogSoftmaxWithLoss(in_features=512, n_classes=len(word_dict.values()), cutoffs=cutoffs)
+    loss_forward.cuda()
+    loss_backward.cuda()
+
+    optimizer = Adam(model.parameters(), lr=1e-3)
 
     writer = SummaryWriter()
     # writer = WriterMock()
 
     n_epochs = 10
 
-    path_to_save_model = 'forward_lm'
+    path_to_save_model = 'bidirectional_lm'
 
     for epoch in trange(n_epochs, desc='Epochs'):
         # Language model
-        train_losses = train_language_model(model, loss, optimizer, train_dataloader)
-        eval_losses, perplexies = evaluate_language_model(model, loss, dev_dataloader)
+        train_losses = train_language_model(model, loss_forward, loss_backward, optimizer, train_dataloader)
+        eval_losses, perplexies = evaluate_language_model(model, loss_forward, dev_dataloader)
 
         writer.add_scalars('Language Model/loss',
                            {'train': np.mean(train_losses), 'eval': np.mean(eval_losses)},
@@ -70,7 +76,7 @@ if __name__ == '__main__':
         # Evaluating on NER task
 
         train_losses = evaluator.train()
-        eval_losses, f1 = evaluator.evaluate()
+        f1 = evaluator.evaluate()
 
         writer.add_scalars('NER/loss',
                            {'train': np.mean(train_losses), 'eval': np.mean(eval_losses)},
@@ -82,7 +88,7 @@ if __name__ == '__main__':
             'epoch': epoch,
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
-            'loss': loss,
+            'loss': (loss_forward, loss_backward),
         }, path_to_save_model)
 
     writer.close()

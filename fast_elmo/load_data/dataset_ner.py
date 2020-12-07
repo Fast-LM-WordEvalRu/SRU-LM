@@ -1,44 +1,33 @@
 import torch
 from torch.utils.data import Dataset
 
+
 class NERDataset(Dataset):
-    def __init__(self, path_to_conll_file):
+    def __init__(self, path_to_conll_file, ner_labels):
         texts = []
         targets = []
-
-        labels_dict = {
-             'O': 0,
-             'B-Loc': 1,
-             'I-Loc': 2,
-             'B-LocOrg': 3,
-             'I-LocOrg': 4,
-             'B-Location': 5,
-             'I-Location': 6,
-             'B-Org': 7,
-             'I-Org': 8,
-             'B-Person': 9,
-             # 'I-Facility': 10,
-             'I-Person': 10,
-        }
+        labels_dict = {k: v for v, k in enumerate(ner_labels)}
 
         with open(path_to_conll_file) as f:
             text = []
-            text_targets = [0]
+            text_targets = [labels_dict['O']]
             for line in f.readlines():
                 line = line.strip()
                 if line:
                     splitted_line = line.split()
-                    text.append(splitted_line[0])
-                    text_targets.append(labels_dict.get(splitted_line[-1], 0))
+                    word = [w for w in splitted_line[0].lower() if w.isalnum()]
+
+                    if len(word) > 0:
+                        word = ''.join(word)
+                        text.append(word)
+                        text_targets.append(labels_dict.get(splitted_line[-1], labels_dict['O']))
                 else:
+                    text_targets += [labels_dict['O'], labels_dict['O']]  # очень плохая практика. Моя функция batch_to_ids увеличивает размер текста на 3, приходится это учитывать везде, где она используется
                     texts.append(text)
-                    text_targets.append(0)
                     targets.append(text_targets)
                     text = []
-                    text_targets = [0]
+                    text_targets = [labels_dict['O']]
 
-        texts = texts[1:]
-        targets = targets[1:]
         self.texts = texts
         self.targets = targets
 
@@ -47,6 +36,6 @@ class NERDataset(Dataset):
 
     def __getitem__(self, item):
         return {
-            'raw_text': self.texts[item],
+            'text': self.texts[item],
             'target': torch.LongTensor(self.targets[item])
         }

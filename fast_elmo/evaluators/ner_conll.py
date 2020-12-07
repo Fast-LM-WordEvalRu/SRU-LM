@@ -3,49 +3,61 @@ from sklearn.metrics import f1_score
 from tqdm import tqdm, trange
 import torch
 from torch.optim import Adam
+from torch.nn.utils.rnn import pad_sequence
+from torch.utils.data import DataLoader
+from fast_elmo.core import batch_to_ids
 
 from fast_elmo.load_data.dataset_ner import NERDataset
-from fast_elmo.load_data.dataloader import get_dataloader
+from ..models.ner import CRFModel
+
+
+def transform_batch(in_dict):
+    out_dict = {}
+    out_dict['target'] = pad_sequence([d['target'] for d in in_dict], padding_value=0, batch_first=True)
+    text_ids, mask = batch_to_ids([d['text'] for d in in_dict])
+    out_dict['text_ids'] = text_ids
+    out_dict['mask'] = mask
+    return out_dict
 
 
 class EvaluatorNER:
-    def __init__(self, path_to_ner, lm_model, cuda=True, train_epochs=10):
+    def __init__(self, path_to_ner, ner_labels, lm_model, cuda=True, train_epochs=5, batch_size=64):
         device_name = 'cuda' if cuda else 'cpu'
         self.device = torch.device(device_name)
 
-        train_dataset = NERDataset(path_to_ner / 'train.txt')
-        test_dataset = NERDataset(path_to_ner / 'test.txt')
+        train_dataset = NERDataset(path_to_ner / 'train.txt', ner_labels)
+        test_dataset = NERDataset(path_to_ner / 'test.txt', ner_labels)
 
-        self.train_dataloader = get_dataloader(train_dataset, {'<PAD>': 0})
-        self.test_dataloader = get_dataloader(test_dataset, {'<PAD>': 0})
+        self.train_dataloader = DataLoader(train_dataset, batch_size=batch_size,
+                                      shuffle=False, collate_fn=transform_batch)
+        self.test_dataloader = DataLoader(test_dataset, batch_size=batch_size,
+                                     shuffle=False, collate_fn=transform_batch)
 
-        self.head = torch.nn.Sequential(
-            torch.nn.Linear(in_features=512, out_features=11)  # у нас 11 уникальных меток для слов
-        ).to(self.device)
-
-        self.loss_func = torch.nn.CrossEntropyLoss().to(self.device)
-        self.optimizer = Adam(self.head.parameters())
+        self.head = CRFModel(ner_labels, emb_size=1024).to(self.device)
+        self.optimizer = Adam(self.head.parameters(), lr=1e-3)
         self.lm_model = lm_model
         self.train_epochs = train_epochs
+        self.ner_labels = ner_labels
 
     def train(self):
+        self.head.train()
         history = []
         for epoch in trange(self.train_epochs, desc='NER Train Epochs', leave=False):
             losses = []
             for batch in tqdm(self.train_dataloader, desc='NER train batch', leave=False):
+                for key in batch.keys():
+                    batch[key] = batch[key].cuda()
+
                 self.optimizer.zero_grad()
 
-                ids, mask, targets = batch
-                ids = ids.to(self.device)
-                mask = mask.to(self.device)
-                targets = targets.flatten().to(self.device)
+                ids = batch['text_ids']
+                mask = batch['mask']
+                targets = batch['target']
 
                 with torch.no_grad():
-                    model_out = self.lm_model(ids, mask)
+                    embeddings = self.lm_model(ids, mask, return_embeddings=True)
 
-                out = self.head(model_out).flatten(0, 1)
-                loss = self.loss_func(out, targets)
-
+                loss = self.head(embeddings, mask, targets)
                 loss.backward()
                 self.optimizer.step()
 
@@ -54,30 +66,29 @@ class EvaluatorNER:
         return history
 
     def evaluate(self):
-        preds = []
-        ground_truth = []
-        losses = []
+        self.head.eval()
         with torch.no_grad():
             for batch in tqdm(self.test_dataloader, desc='NER eval batch', leave=False):
-                ids, mask, targets = batch
+                for key in batch.keys():
+                    batch[key] = batch[key].cuda()
 
-                ids = ids.to(self.device)
-                mask = mask.to(self.device)
-                targets = targets.flatten().to(self.device)
+                ids = batch['text_ids']
+                mask = batch['mask']
+                targets = batch['target'].flatten()
 
-                model_out = self.lm_model(ids, mask)
-                out = self.head(model_out).flatten(0, 1)
+                embeddings = self.lm_model(ids, mask, return_embeddings=True)
+                out = self.head(embeddings, mask, targets)
 
-                loss = self.loss_func(out, targets)
-                losses.append(loss.item())
+                all_preds = []
+                all_ground_truth = []
+                for i, y_pred in enumerate(out):
+                    all_preds.append(y_pred)
+                    all_ground_truth.append(batch['target'][i, :len(y_pred)].cpu().numpy())
 
-                ground_truth.append(targets.cpu())
-                preds.append(out)
+        y_true = np.concatenate(all_ground_truth)
+        y_pred = np.concatenate(all_preds)
 
-        preds = np.hstack([p.argmax(axis=1).cpu().numpy() for p in preds])
-        ground_truth = np.hstack([g.numpy() for g in ground_truth])
+        f1 = f1_score(y_true=y_true, y_pred=y_pred,
+                      average='weighted', labels=np.arange(1, len(self.ner_labels)), zero_division=0)
 
-        f1 = f1_score(y_true=ground_truth, y_pred=preds,
-                      average='weighted', labels=np.arange(1, 11), zero_division=0)
-
-        return losses, f1
+        return f1
