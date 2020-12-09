@@ -21,7 +21,11 @@ char_embedder_params = {
 batch_size = 32
 
 sru_model_params = {
-    'backward': False,
-    'n_sru_layers': 8,
+    'n_layers': 8,
+    'output_dim': 512
+}
+
+lstm_model_params = {
+    'n_layers': 2,
     'output_dim': 512
 }

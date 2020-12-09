@@ -1,22 +1,26 @@
 import torch
-
 from .unidirectional_lm import UnidirectionalLM
 
 
 class BidirectionalLM(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, sru=True):
         super().__init__()
-        self.forward_lm = UnidirectionalLM()
+        self.forward_lm = UnidirectionalLM(sru=sru)
         char_embedder = self.forward_lm.char_embedder
-        self.backward_lm = UnidirectionalLM(char_embedder)
+        self.backward_lm = UnidirectionalLM(char_embedder=char_embedder, sru=sru)
         self.use_gpu = False
 
     def forward(self, ids, mask, return_embeddings=False, **kwargs):
         forward_out = self.forward_lm(ids, mask)
         
-        backward_ids = ids.flip([1])
-        backward_mask = mask.flip([1])
-        backward_out = self.backward_lm(backward_ids, backward_mask).flip([1])
+        backward_ids = torch.nn.utils.rnn.pad_sequence(
+            [pline[torch.arange(s+1).flip(0)] for s, pline in zip(mask.sum(1), ids)],
+            batch_first=True)
+
+        backward_out = self.backward_lm(backward_ids, mask)
+        backward_out = torch.nn.utils.rnn.pad_sequence(
+            [pline[torch.arange(s+1).flip(0)] for s, pline in zip(mask.sum(1), backward_out)],
+            batch_first=True)
 
         if return_embeddings:
             return torch.cat([forward_out, backward_out], dim=2)

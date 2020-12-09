@@ -34,17 +34,17 @@ if __name__ == '__main__':
     with (path_to_data / 'lentaru_word_dict.json').open() as f:
         word_dict = json.load(f)
 
-    train_dataset = FastDataset(path_to_data / 'train.txt', word_dict, n_samples=100_000)
+    train_dataset = FastDataset(path_to_data / 'train.txt', word_dict, n_samples=1_000_000)
     dev_dataset = FastDataset(path_to_data / 'dev.txt', word_dict, n_samples=1_000)
 
     train_dataloader = get_dataloader(train_dataset, word_dict, bidirectional=True)
     dev_dataloader = get_dataloader(dev_dataset, word_dict, bidirectional=True)
 
-    model = BidirectionalLM().cuda()
+    model = BidirectionalLM(sru=False).cuda()
 
     path_to_ner = Path('/home/artem/DataScience/Wikiner/')
     ner_labels = ['O', 'B-LOC', 'I-LOC', 'B-MISC', 'I-MISC', 'B-ORG', 'I-ORG', 'B-PER', 'I-PER']
-    evaluator = EvaluatorNER(path_to_ner, ner_labels, model, batch_size=16, train_epochs=3)
+    evaluator = EvaluatorNER(path_to_ner, ner_labels, model, batch_size=16, train_epochs=10)
 
     cutoffs = [100, 1000, 5000]
 
@@ -53,12 +53,13 @@ if __name__ == '__main__':
     loss_forward.cuda()
     loss_backward.cuda()
 
-    optimizer = Adam(model.parameters(), lr=1e-3)
+    optimizer = Adam(model.parameters(), lr=5e-4)
 
     writer = SummaryWriter()
     # writer = WriterMock()
 
-    n_epochs = 10
+    n_epochs = 9
+    evaluate_after = 3
 
     path_to_save_model = 'bidirectional_lm'
 
@@ -75,14 +76,15 @@ if __name__ == '__main__':
 
         # Evaluating on NER task
 
-        train_losses = evaluator.train()
-        f1 = evaluator.evaluate()
+        if (epoch+1) % evaluate_after == 0:
+            train_losses = evaluator.train()
+            f1 = evaluator.evaluate()
 
-        writer.add_scalars('NER/loss',
-                           {'train': np.mean(train_losses), 'eval': np.mean(eval_losses)},
-                           epoch)
+            writer.add_scalars('NER/loss',
+                               {'train': np.mean(train_losses), 'eval': np.mean(eval_losses)},
+                               epoch)
 
-        writer.add_scalar('NER/eval F1 score', np.mean(f1), epoch)
+            writer.add_scalar('NER/eval F1 score', np.mean(f1), epoch)
 
         torch.save({
             'epoch': epoch,
