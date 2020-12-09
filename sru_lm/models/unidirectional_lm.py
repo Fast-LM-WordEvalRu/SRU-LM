@@ -41,6 +41,7 @@ class UnidirectionalLM(nn.Module):
                 num_layers=model_params['n_layers'],
                 batch_first=True
             )
+        self.model_params = model_params
 
     def forward(self, ids, mask):
         batch_size = ids.shape[0]
@@ -50,8 +51,8 @@ class UnidirectionalLM(nn.Module):
             inverted_mask = ~mask
             inverted_mask = inverted_mask.T
 
-            hidden = next(self._language_model.parameters()).data.new(sru_model_params['n_layers'],
-                                                                      batch_size, sru_model_params['output_dim']).zero_()
+            hidden = next(self._language_model.parameters()).data.new(self.model_params['n_layers'],
+                                                                      batch_size, self.model_params['output_dim']).zero_()
             if self.use_gpu:
                 hidden = hidden.cuda()
 
