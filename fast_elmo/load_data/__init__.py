@@ -1,8 +1,9 @@
 #   Author: Artem Skiba
 #   Created: 20/01/2020
 
-from .batch_generator import BatchGenerator
+from .dataset import FastDataset
+from .dataloader import get_dataloader
 
 __all__ = [
-    'BatchGenerator'
+    'FastDataset', 'get_dataloader'
 ]

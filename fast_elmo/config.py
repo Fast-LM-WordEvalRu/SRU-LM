@@ -17,3 +17,15 @@ char_embedder_params = {
         [7, 1024]],
     'n_highway': 2,
     'output_dim': 512}
+
+batch_size = 32
+
+sru_model_params = {
+    'n_layers': 8,
+    'output_dim': 512
+}
+
+lstm_model_params = {
+    'n_layers': 2,
+    'output_dim': 512
+}

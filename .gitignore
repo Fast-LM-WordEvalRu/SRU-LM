@@ -6,6 +6,7 @@ models/*
 .ipynb_checkpoints
 .idea
 data/*
+fast_elmo/runs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

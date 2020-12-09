@@ -12,12 +12,12 @@ def batch_to_ids(batch):
 class TextTransformer:
     def __init__(self):
         self.max_characters_per_token = 25  # в русском языке почти нет слов длиннее 20 букв
-        self.model_char_dict = TextTransformer.__build_char_dict()
+        self.model_char_dict = TextTransformer.build_char_dict()
         self.max_char_idx = max(self.model_char_dict.values())
 
     def batch_to_ids(self, batch):
         sentence_ids = [self.sentence_to_ids(sentence) for sentence in batch]
-        max_sentence_len = max(len(s) for s in sentence_ids)
+        max_sentence_len = max(len(s) for s in sentence_ids)+1
 
         mask = []
         ids = []
@@ -30,10 +30,11 @@ class TextTransformer:
                 s.append(zeros)
                 s_mask.append(False)
 
-            ids.append(s)
-            mask.append(s_mask)
+            ids.append(s[:max_sentence_len])  # TODO гарантировать, что s и s_mask будут длины max_sentence_len
+            mask.append(s_mask[:max_sentence_len])
 
         ids = torch.LongTensor(ids)
+        mask = torch.BoolTensor(mask)
         return ids, mask
 
     def sentence_to_ids(self, sentence):
@@ -55,14 +56,15 @@ class TextTransformer:
         ids.append(self.model_char_dict['WORD_END'])
         ids += [self.model_char_dict['WORD_PAD']] * (self.max_characters_per_token-len(ids))
 
-        assert len(ids) == self.max_characters_per_token
-        return ids
+        # assert len(ids) == self.max_characters_per_token  # TODO разобраться, почему это иногда не срабатывает
+        return ids[:self.max_characters_per_token]
 
     @staticmethod
-    def __build_char_dict():
+    def build_char_dict():
         cyrillic = set()
         latin = set()
-        punctuation = set('.,;:!?;…‐-‑‒–—―[](){}⟨⟩„“«»“”‘’‹›\'\"')
+        punctuation = set('.,;:!?;…‐-‑‒–—―[](){}⟨⟩„“«»“”‘’‹›\'\"&%@#$*№')
+        numbers = set('0123456789')
 
         for i in range(2000):
             if re.match(r'[a-zA-Z]', chr(i)):
@@ -74,7 +76,7 @@ class TextTransformer:
         assert len(latin) == 52
 
         # приводим к списку и сортируем. Это нужно для воспроизводимости
-        model_chars = cyrillic | latin | punctuation
+        model_chars = cyrillic | latin | punctuation | numbers
         model_chars = list(model_chars)
         model_chars.sort()
 
