@@ -3,7 +3,7 @@ from .unidirectional_lm import UnidirectionalLM
 
 
 class BidirectionalLM(torch.nn.Module):
-    def __init__(self, sru=True, char_embedder_params=char_embedder_params, model_params=model_params):
+    def __init__(self, sru=True, char_embedder_params=None, model_params=None):
         super().__init__()
         self.use_gpu = False  # TODO: сделать нормальную передачу вызова методов вроде .cuda() в родительский класс
 
