@@ -8,11 +8,11 @@ from torch.nn import AdaptiveLogSoftmaxWithLoss
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
-from fast_elmo.load_data.dataset import FastDataset
-from fast_elmo.load_data.dataloader import get_dataloader
-from fast_elmo.models.bidirectional_lm import BidirectionalLM
-from fast_elmo.models.trainer import train_language_model, evaluate_language_model
-from fast_elmo.evaluators.ner_conll import EvaluatorNER
+from sru_lm.load_data.dataset import FastDataset
+from sru_lm.load_data.dataloader import get_dataloader
+from sru_lm.models.bidirectional_lm import BidirectionalLM
+from sru_lm.models.trainer import train_language_model, evaluate_language_model
+from sru_lm.evaluators.ner_conll import EvaluatorNER
 
 
 class WriterMock:

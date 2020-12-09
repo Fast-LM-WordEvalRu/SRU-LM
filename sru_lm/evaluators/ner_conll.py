@@ -1,14 +1,21 @@
 import numpy as np
 from sklearn.metrics import f1_score
-from tqdm import tqdm, trange
 import torch
 from torch.optim import Adam
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
-from fast_elmo.core import batch_to_ids
+from sru_lm.core import batch_to_ids
 
-from fast_elmo.load_data.dataset_ner import NERDataset
+from sru_lm.load_data.dataset_ner import NERDataset
 from ..models.ner import CRFModel
+
+import os
+if os.environ.get('RUN_FROM_JUPYTER', 'False') == 'True':
+    from tqdm.notebook import tqdm, trange
+else:
+    from tqdm import tqdm, trange
+
+
 
 
 def transform_batch(in_dict):

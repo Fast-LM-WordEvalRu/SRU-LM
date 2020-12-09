@@ -1,4 +1,8 @@
-from tqdm import tqdm
+import os
+if os.environ.get('RUN_FROM_JUPYTER', 'False') == 'True':
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
 import torch
 
 tqdm_bar_format = "{l_bar}{bar} | {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}] | {postfix[0]} {postfix[1][value]:>8.4g}                                 "

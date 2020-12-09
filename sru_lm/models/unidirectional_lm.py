@@ -1,8 +1,8 @@
 from torch import nn
 from sru import SRU
 
-from fast_elmo.core.char_embedder import CharEmbedder
-from fast_elmo.config import char_embedder_params, sru_model_params, batch_size, lstm_model_params
+from sru_lm.core.char_embedder import CharEmbedder
+from sru_lm.config import char_embedder_params, sru_model_params, batch_size, lstm_model_params
 
 
 class UnidirectionalLM(nn.Module):

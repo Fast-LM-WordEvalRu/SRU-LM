@@ -2,7 +2,7 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 
 from ..core import batch_to_ids
-from fast_elmo.config import batch_size
+from sru_lm.config import batch_size
 
 
 class SequencePadder:

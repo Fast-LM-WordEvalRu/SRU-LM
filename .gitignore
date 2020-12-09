@@ -1,12 +1,12 @@
 notebooks/*
 reports/.ipynb_checkpoints
-fast_elmo/.idea
-fast_elmo/__pycache__/
+sru_lm/.idea
+sru_lm/__pycache__/
 models/*
 .ipynb_checkpoints
 .idea
 data/*
-fast_elmo/runs/*
+sru_lm/runs/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
