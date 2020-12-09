@@ -3,12 +3,23 @@ from .unidirectional_lm import UnidirectionalLM
 
 
 class BidirectionalLM(torch.nn.Module):
-    def __init__(self, sru=True):
+    def __init__(self, sru=True, char_embedder_params=char_embedder_params, model_params=model_params):
         super().__init__()
-        self.forward_lm = UnidirectionalLM(sru=sru)
+        self.use_gpu = False  # TODO: сделать нормальную передачу вызова методов вроде .cuda() в родительский класс
+
+        self.forward_lm = UnidirectionalLM(
+            sru=sru,
+            char_embedder_params=char_embedder_params,
+            model_params=model_params
+        )
+
         char_embedder = self.forward_lm.char_embedder
-        self.backward_lm = UnidirectionalLM(char_embedder=char_embedder, sru=sru)
-        self.use_gpu = False
+        self.backward_lm = UnidirectionalLM(
+            char_embedder=char_embedder,
+            sru=sru,
+            char_embedder_params=char_embedder_params,
+            model_params=model_params
+        )
 
     def forward(self, ids, mask, return_embeddings=False, **kwargs):
         forward_out = self.forward_lm(ids, mask)

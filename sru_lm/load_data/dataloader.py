@@ -2,7 +2,7 @@ from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
 
 from ..core import batch_to_ids
-from sru_lm.config import batch_size
+from sru_lm.config import batch_size as default_batch_size
 
 
 class SequencePadder:
@@ -33,7 +33,9 @@ class SequencePadder:
 
 
 
-def get_dataloader(dataset, word_dict, bidirectional=False):
+def get_dataloader(dataset, word_dict, bidirectional=False, batch_size=None):
+    if batch_size is None:
+        batch_size = default_batch_size
     dataloader = DataLoader(dataset, batch_size=batch_size,
                             shuffle=False, num_workers=4,
                             collate_fn=SequencePadder(padding_value=word_dict['<PAD>'], bidirectional=bidirectional))
