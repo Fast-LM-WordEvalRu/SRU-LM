@@ -4,17 +4,17 @@ if not hasattr(batch_to_ids, 'text_transformer'):
 
 
 char_embedder_params = {
-    'char_embedding_dim': 16,
+    'char_embedding_dim': 64,
     'max_characters_per_token': batch_to_ids.text_transformer.max_characters_per_token,
     'n_characters': batch_to_ids.text_transformer.max_char_idx + 1,
     'cnn_options': [
-        [1, 32],
-        [2, 32],
-        [3, 64],
-        [4, 128],
-        [5, 256],
-        [6, 512],
-        [7, 1024]],
+        [1, 128],
+        [2, 128],
+        [3, 256],
+        [4, 512],
+        [5, 512],
+        [6, 1024],
+        [7, 2048]],
     'n_highway': 2,
     'output_dim': 512}
 

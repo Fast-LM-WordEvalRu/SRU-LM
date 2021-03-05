@@ -3,16 +3,21 @@ import re
 import torch
 
 
-def batch_to_ids(batch):
+def batch_to_ids(batch, model_chars, max_character_per_token):
     if not hasattr(batch_to_ids, 'text_transformer'):
-        batch_to_ids.text_transformer = TextTransformer()
+        # TODO: Сейчас есть проблема: если не передавать значения model_chars или max_character_per_token,
+        # TODO: то они будут инициализированы как None, тк это является дефолтными параметрами выше по цепи вызовов
+        batch_to_ids.text_transformer = TextTransformer(model_chars, max_character_per_token)
     return batch_to_ids.text_transformer.batch_to_ids(batch)
 
 
 class TextTransformer:
-    def __init__(self):
-        self.max_characters_per_token = 25  # в русском языке почти нет слов длиннее 20 букв
-        self.model_char_dict = TextTransformer.build_char_dict()
+    def __init__(self,
+                 model_chars=None,
+                 max_characters_per_token=25  # в русском языке почти нет слов длиннее 20 букв
+                 ):
+        self.max_characters_per_token = max_characters_per_token
+        self.model_char_dict = TextTransformer.build_char_dict(model_chars)
         self.max_char_idx = max(self.model_char_dict.values())
 
     def batch_to_ids(self, batch):
@@ -60,23 +65,25 @@ class TextTransformer:
         return ids[:self.max_characters_per_token]
 
     @staticmethod
-    def build_char_dict():
-        cyrillic = set()
-        latin = set()
-        punctuation = set('.,;:!?;…‐-‑‒–—―[](){}⟨⟩„“«»“”‘’‹›\'\"&%@#$*№')
-        numbers = set('0123456789')
+    def build_char_dict(model_chars):
+        if model_chars is None:
+            cyrillic = set()
+            latin = set()
+            punctuation = set('.,;:!?;…‐-‑‒–—―[](){}⟨⟩„“«»“”‘’‹›\'\"&%@#$*№')
+            numbers = set('0123456789')
 
-        for i in range(2000):
-            if re.match(r'[a-zA-Z]', chr(i)):
-                latin.add(chr(i))
-            elif re.match(r'[а-яА-ЯёЁ]', chr(i)):
-                cyrillic.add(chr(i))
+            for i in range(2000):
+                if re.match(r'[a-zA-Z]', chr(i)):
+                    latin.add(chr(i))
+                elif re.match(r'[а-яА-ЯёЁ]', chr(i)):
+                    cyrillic.add(chr(i))
 
-        assert len(cyrillic) == 66
-        assert len(latin) == 52
+            assert len(cyrillic) == 66
+            assert len(latin) == 52
+
+            model_chars = cyrillic | latin | punctuation | numbers
 
         # приводим к списку и сортируем. Это нужно для воспроизводимости
-        model_chars = cyrillic | latin | punctuation | numbers
         model_chars = list(model_chars)
         model_chars.sort()
 
