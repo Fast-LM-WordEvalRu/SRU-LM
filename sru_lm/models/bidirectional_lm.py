@@ -36,8 +36,10 @@ class BidirectionalLM(torch.nn.Module):
                 }
 
     def reverse_batch(self, tensor, mask):
-        lens = mask.sum(1).cpu()
+        cpu_mask = mask.cpu()
         cpu_tensor = tensor.cpu()
+
+        lens = cpu_mask.sum(1)
         reversed_not_padded = [
             pline[torch.arange(s + 1).flip(0)] for s, pline in zip(lens, cpu_tensor)]
         reversed_padded = torch.nn.utils.rnn.pad_sequence(reversed_not_padded, batch_first=True)
