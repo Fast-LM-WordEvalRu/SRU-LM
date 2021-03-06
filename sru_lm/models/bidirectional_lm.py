@@ -22,9 +22,11 @@ class BidirectionalLM(torch.nn.Module):
         )
 
     def forward(self, ids, mask, return_embeddings=False, **kwargs):
-        forward_out = self.forward_lm(ids, mask)
         backward_ids = self.reverse_batch(ids, mask)
+
+        forward_out = self.forward_lm(ids, mask)
         backward_out = self.backward_lm(backward_ids, mask)
+
         backward_out = self.reverse_batch(backward_out, mask)
 
         if return_embeddings:
