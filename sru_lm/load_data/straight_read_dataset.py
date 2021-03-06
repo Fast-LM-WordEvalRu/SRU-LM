@@ -30,8 +30,8 @@ class StraightReadDataset(Dataset):
             lines_to_skip = idx - self.prev_idx - 1
 
         while lines_to_skip > 0:
-            self.fileobj.readline()
-            lines_to_skip -= 1
+            if self.fileobj.readline().strip():
+                lines_to_skip -= 1
 
         line = self.fileobj.readline()
         self.prev_idx = idx
