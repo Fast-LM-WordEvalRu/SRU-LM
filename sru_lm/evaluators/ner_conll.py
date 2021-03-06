@@ -16,8 +16,6 @@ else:
     from tqdm import tqdm, trange
 
 
-
-
 def transform_batch(in_dict):
     out_dict = {}
     out_dict['target'] = pad_sequence([d['target'] for d in in_dict], padding_value=0, batch_first=True)
