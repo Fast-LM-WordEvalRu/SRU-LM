@@ -36,7 +36,8 @@ class BidirectionalLM(torch.nn.Module):
                 }
 
     def reverse_batch(self, tensor, mask):
-        cpu_mask = mask.cpu()
+        cpu_mask = mask.int()
+        cpu_mask = cpu_mask.cpu()
         cpu_tensor = tensor.cpu()
 
         lens = cpu_mask.sum(1)
