@@ -65,6 +65,5 @@ class UnidirectionalLM(nn.Module):
             return lstm_out
 
     def to(self, device):
-        self = super().to(device)
         self.device = device
-        return self
+        return super().to(device)

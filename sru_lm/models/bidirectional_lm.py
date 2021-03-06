@@ -45,6 +45,5 @@ class BidirectionalLM(torch.nn.Module):
         return reversed_padded
 
     def to(self, device):
-        self = super().to(device)
         self.device = device
-        return self
+        return super().to(device)

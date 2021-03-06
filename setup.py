@@ -14,7 +14,7 @@ requirements = load_requirements('requirements.txt')
 
 setup(
     name='sru_lm',
-    version='0.1.76',
+    version='0.1.77',
     packages=find_packages(),
     install_requires=requirements,
 )
