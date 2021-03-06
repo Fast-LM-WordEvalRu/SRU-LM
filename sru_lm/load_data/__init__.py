@@ -1,9 +1,10 @@
 #   Author: Artem Skiba
 #   Created: 20/01/2020
 
-from .dataset import FastDataset
+from .random_access_dataset import RandomAccessDataset
+from .straight_read_dataset import StraightReadDataset
 from .dataloader import get_dataloader
 
 __all__ = [
-    'FastDataset', 'get_dataloader'
+    'RandomAccessDataset', 'get_dataloader', 'StraightReadDataset'
 ]

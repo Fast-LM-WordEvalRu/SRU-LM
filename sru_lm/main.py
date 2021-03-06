@@ -8,7 +8,7 @@ from torch.nn import AdaptiveLogSoftmaxWithLoss
 from torch.optim import Adam
 from torch.utils.tensorboard import SummaryWriter
 
-from sru_lm.load_data.dataset import FastDataset
+from sru_lm.load_data.random_access_dataset import RandomAccessDataset
 from sru_lm.load_data.dataloader import get_dataloader
 from sru_lm.models.bidirectional_lm import BidirectionalLM
 from sru_lm.models.trainer import train_language_model, evaluate_language_model
@@ -34,8 +34,8 @@ if __name__ == '__main__':
     with (path_to_data / 'lentaru_word_dict.json').open() as f:
         word_dict = json.load(f)
 
-    train_dataset = FastDataset(path_to_data / 'train.txt', word_dict, n_samples=1_000_000)
-    dev_dataset = FastDataset(path_to_data / 'dev.txt', word_dict, n_samples=1_000)
+    train_dataset = RandomAccessDataset(path_to_data / 'train.txt', word_dict, n_samples=1_000_000)
+    dev_dataset = RandomAccessDataset(path_to_data / 'dev.txt', word_dict, n_samples=1_000)
 
     train_dataloader = get_dataloader(train_dataset, word_dict, bidirectional=True)
     dev_dataloader = get_dataloader(dev_dataset, word_dict, bidirectional=True)

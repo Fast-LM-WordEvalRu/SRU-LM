@@ -7,7 +7,7 @@ from torch.utils.data import Dataset
 from ..core.utils import raw_count
 
 
-class FastDataset(Dataset):
+class RandomAccessDataset(Dataset):
     def __init__(self, filename, word_dict, n_samples=None, max_sent_len=None):
         self._filename = str(filename)
         self.word_dict = word_dict

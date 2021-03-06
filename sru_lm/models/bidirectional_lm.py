@@ -5,7 +5,7 @@ from .unidirectional_lm import UnidirectionalLM
 class BidirectionalLM(torch.nn.Module):
     def __init__(self, sru=True, char_embedder_params=None, model_params=None):
         super().__init__()
-        self.use_gpu = False  # TODO: сделать нормальную передачу вызова методов вроде .cuda() в родительский класс
+        self.device = 'cpu'
 
         self.forward_lm = UnidirectionalLM(
             sru=sru,
@@ -41,14 +41,7 @@ class BidirectionalLM(torch.nn.Module):
                 'backward_out': backward_out
                 }
 
-    def cuda(self):
-        self.use_gpu = True
-        self.forward_lm.cuda()
-        self.backward_lm.cuda()
-        return self
-
-    def cpu(self):
-        self.use_gpu = False
-        self.forward_lm.cpu()
-        self.backward_lm.cpu()
+    def to(self, device):
+        self = super().to(device)
+        self.device = device
         return self

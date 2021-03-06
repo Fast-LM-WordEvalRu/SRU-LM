@@ -20,7 +20,7 @@ class UnidirectionalLM(nn.Module):
         else:
             self.char_embedder = char_embedder
 
-        self.use_gpu = False
+        self.device = 'cpu'
         self.sru = sru
 
         if self.sru:
@@ -51,29 +51,20 @@ class UnidirectionalLM(nn.Module):
             inverted_mask = ~mask
             inverted_mask = inverted_mask.T
 
-            hidden = next(self._language_model.parameters()).data.new(self.model_params['n_layers'],
-                                                                      batch_size, self.model_params['output_dim']).zero_()
-            if self.use_gpu:
-                hidden = hidden.cuda()
+            hidden = next(self._language_model.parameters()).data.new(
+                self.model_params['n_layers'],
+                batch_size,
+                self.model_params['output_dim']).zero_().to(self.device)
 
             lm_out, hidden = self._language_model(encoded_chars, hidden, mask_pad=inverted_mask)
 
             return lm_out.permute(1, 0, 2)
         else:
             encoded_chars = self.char_embedder(ids)
-            # lens = mask.sum(dim=1)
-            # encoded_chars = nn.utils.rnn.pack_padded_sequence(encoded_chars, lens, batch_first=True)
             lstm_out, _ = self._language_model(encoded_chars)
-            # lstm_out, _ = nn.utils.rnn.pad_packed_sequence(lstm_out, batch_first=True)
             return lstm_out
 
-    def cuda(self):
-        self.use_gpu = True
-        super().cuda()
+    def to(self, device):
+        self = super().to(device)
+        self.device = device
         return self
-
-    def cpu(self):
-        self.use_gpu = False
-        super().cpu()
-        return self
-
