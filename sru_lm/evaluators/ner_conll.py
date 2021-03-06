@@ -50,7 +50,7 @@ class EvaluatorNER:
             losses = []
             for batch in tqdm(self.train_dataloader, desc='NER train batch', leave=False):
                 for key in batch.keys():
-                    batch[key] = batch[key].cuda()
+                    batch[key] = batch[key].to(self.device)
 
                 self.optimizer.zero_grad()
 
@@ -74,7 +74,7 @@ class EvaluatorNER:
         with torch.no_grad():
             for batch in tqdm(self.test_dataloader, desc='NER eval batch', leave=False):
                 for key in batch.keys():
-                    batch[key] = batch[key].cuda()
+                    batch[key] = batch[key].to(self.device)
 
                 ids = batch['text_ids']
                 mask = batch['mask']
