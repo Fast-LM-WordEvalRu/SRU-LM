@@ -23,15 +23,9 @@ class BidirectionalLM(torch.nn.Module):
 
     def forward(self, ids, mask, return_embeddings=False, **kwargs):
         forward_out = self.forward_lm(ids, mask)
-        
-        backward_ids = torch.nn.utils.rnn.pad_sequence(
-            [pline[torch.arange(s+1).flip(0)] for s, pline in zip(mask.sum(1), ids)],
-            batch_first=True)
-
+        backward_ids = self.reverse_batch(ids, mask)
         backward_out = self.backward_lm(backward_ids, mask)
-        backward_out = torch.nn.utils.rnn.pad_sequence(
-            [pline[torch.arange(s+1).flip(0)] for s, pline in zip(mask.sum(1), backward_out)],
-            batch_first=True)
+        backward_out = self.reverse_batch(backward_out, mask)
 
         if return_embeddings:
             return torch.cat([forward_out, backward_out], dim=2)
@@ -40,6 +34,12 @@ class BidirectionalLM(torch.nn.Module):
                 'forward_out': forward_out,
                 'backward_out': backward_out
                 }
+
+    def reverse_batch(self, tensor, mask):
+        lens = mask.sum(1)
+        reversed_not_padded = [pline[torch.arange(s + 1).flip(0)] for s, pline in zip(lens, tensor)]
+        reversed_padded = torch.nn.utils.rnn.pad_sequence(reversed_not_padded, batch_first=True)
+        return reversed_padded
 
     def to(self, device):
         self = super().to(device)
