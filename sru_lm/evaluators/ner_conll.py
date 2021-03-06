@@ -28,9 +28,8 @@ def transform_batch(in_dict):
 
 
 class EvaluatorNER:
-    def __init__(self, path_to_ner, ner_labels, lm_model, cuda=True, train_epochs=5, batch_size=64):
-        device_name = 'cuda' if cuda else 'cpu'
-        self.device = torch.device(device_name)
+    def __init__(self, path_to_ner, ner_labels, lm_model, train_epochs=5, batch_size=64):
+        self.device = lm_model.device
 
         train_dataset = NERDataset(path_to_ner / 'train.txt', ner_labels)
         test_dataset = NERDataset(path_to_ner / 'test.txt', ner_labels)
