@@ -20,7 +20,7 @@ class StraightReadDataset(Dataset):
 
     def __getitem__(self, idx):
         assert idx >= 0
-        if self.prev_idx is None or idx < self.prev_idx:
+        if self.prev_idx is None or idx <= self.prev_idx:
             if self.fileobj:
                 self.fileobj.close()
 
