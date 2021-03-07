@@ -17,7 +17,7 @@ def train_language_model(model, loss_forward, loss_backward, optimizer, dataload
         for batch in dataloader:
             optimizer.zero_grad()
             for key in batch.keys():
-                batch[key] = batch[key].to(model.device)
+                batch[key] = batch[key].to(model.device_name)
 
             model_out = model(**batch)
             forward_out = model_out['forward_out'].flatten(0, 1)
@@ -51,7 +51,7 @@ def evaluate_language_model(model, loss, dataloader):
                   desc='Evaluating language model', postfix=["Loss:", dict(value=0)]) as t:
             for batch in dataloader:
                 for key in batch.keys():
-                    batch[key] = batch[key].to(model.device)
+                    batch[key] = batch[key].to(model.device_name)
 
                 ids = batch['ids']
                 mask = batch['mask']

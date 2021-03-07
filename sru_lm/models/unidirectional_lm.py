@@ -20,7 +20,7 @@ class UnidirectionalLM(nn.Module):
         else:
             self.char_embedder = char_embedder
 
-        self.device = 'cpu'
+        self.device_name = 'cpu'
         self.sru = sru
 
         if self.sru:
@@ -54,7 +54,7 @@ class UnidirectionalLM(nn.Module):
             hidden = next(self._language_model.parameters()).data.new(
                 self.model_params['n_layers'],
                 batch_size,
-                self.model_params['output_dim']).zero_().to(self.device)
+                self.model_params['output_dim']).zero_().to(self.device_name)
 
             lm_out, hidden = self._language_model(encoded_chars, hidden, mask_pad=inverted_mask)
 
@@ -65,5 +65,5 @@ class UnidirectionalLM(nn.Module):
             return lstm_out
 
     def to(self, device):
-        self.device = device
+        self.device_name = device
         return super().to(device)

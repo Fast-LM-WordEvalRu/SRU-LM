@@ -27,7 +27,7 @@ def transform_batch(in_dict):
 
 class EvaluatorNER:
     def __init__(self, path_to_ner, ner_labels, lm_model, train_epochs=5, batch_size=64):
-        self.device = lm_model.device
+        self.device = lm_model.device_name
 
         train_dataset = NERDataset(path_to_ner / 'train.txt', ner_labels)
         test_dataset = NERDataset(path_to_ner / 'test.txt', ner_labels)
