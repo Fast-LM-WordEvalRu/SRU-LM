@@ -5,7 +5,6 @@ from .unidirectional_lm import UnidirectionalLM
 class BidirectionalLM(torch.nn.Module):
     def __init__(self, sru=True, char_embedder_params=None, model_params=None):
         super().__init__()
-        self.device_name = 'cpu'
 
         self.forward_lm = UnidirectionalLM(
             sru=sru,
@@ -40,10 +39,6 @@ class BidirectionalLM(torch.nn.Module):
     def reverse_batch(self, tensor, mask):
         lens = mask.sum(1)
         reversed_not_padded = [
-            pline[torch.arange(s, -1, -1, device=self.device_name)] for s, pline in zip(lens, tensor)]
+            pline[torch.arange(s, -1, -1)] for s, pline in zip(lens, tensor)]
         reversed_padded = torch.nn.utils.rnn.pad_sequence(reversed_not_padded, batch_first=True)
         return reversed_padded
-
-    def to(self, device):
-        self.device_name = device
-        return super().to(device)

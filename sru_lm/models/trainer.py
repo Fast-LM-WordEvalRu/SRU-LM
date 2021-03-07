@@ -8,7 +8,7 @@ import torch
 tqdm_bar_format = "{l_bar}{bar} | {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}] | {postfix[0]} {postfix[1][value]:>8.4g}                                 "
 
 
-def train_language_model(model, loss_forward, loss_backward, optimizer, dataloader):
+def train_language_model(model, loss_forward, loss_backward, optimizer, dataloader, device):
     model.train()
 
     losses = []
@@ -17,7 +17,7 @@ def train_language_model(model, loss_forward, loss_backward, optimizer, dataload
         for batch in dataloader:
             optimizer.zero_grad()
             for key in batch.keys():
-                batch[key] = batch[key].to(model.device_name)
+                batch[key] = batch[key].to(device)
 
             model_out = model(**batch)
             forward_out = model_out['forward_out'].flatten(0, 1)
@@ -42,7 +42,7 @@ def train_language_model(model, loss_forward, loss_backward, optimizer, dataload
     return losses
 
 
-def evaluate_language_model(model, loss, dataloader):
+def evaluate_language_model(model, loss, dataloader, device):
     model.eval()
     perplexies = []
     losses = []
@@ -51,7 +51,7 @@ def evaluate_language_model(model, loss, dataloader):
                   desc='Evaluating language model', postfix=["Loss:", dict(value=0)]) as t:
             for batch in dataloader:
                 for key in batch.keys():
-                    batch[key] = batch[key].to(model.device_name)
+                    batch[key] = batch[key].to(device)
 
                 ids = batch['ids']
                 mask = batch['mask']
