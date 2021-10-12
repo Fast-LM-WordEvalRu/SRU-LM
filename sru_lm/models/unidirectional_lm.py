@@ -10,15 +10,8 @@ from sru_lm.config import (
 
 
 class UnidirectionalLM(nn.Module):
-    def __init__(self, char_embedder=None, sru=True, char_embedder_params=None, model_params=None):
+    def __init__(self, sru=True, model_params=None):
         super().__init__()
-
-        if char_embedder is None:
-            if char_embedder_params is None:
-                char_embedder_params = default_char_embedder_params
-            self.char_embedder = CharEmbedder(**char_embedder_params)
-        else:
-            self.char_embedder = char_embedder
 
         self.use_gpu = False
         self.sru = sru

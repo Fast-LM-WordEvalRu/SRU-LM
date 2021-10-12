@@ -1,9 +1,10 @@
-sru==2.3.5
+sru
 pytorch-crf==0.7.2
-torch==1.5.1
-tensorboard==2.2.1
-nltk==3.5
-overrides==3.0.0
-scikit-learn==0.23.1
-scipy==1.5.0
+torch
+tensorboard
+nltk
+overrides
+scikit-learn
+scipy
 tqdm
+numpy
