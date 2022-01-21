@@ -4,13 +4,15 @@ if os.environ.get('RUN_FROM_JUPYTER', 'False') == 'True':
 else:
     from tqdm import tqdm
 import torch
+import numpy as np
 
 tqdm_bar_format = "{l_bar}{bar} | {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}] | {postfix[0]} {postfix[1][value]:>8.4g}                                 "
 
 
 def train_language_model(model, loss_forward, loss_backward, optimizer, dataloader):
     model.train()
-
+    smoothed_loss_value = 8
+    eps = 0.05
     losses = []
     with tqdm(total=len(dataloader), bar_format=tqdm_bar_format, leave=False,
               desc='Training language model', postfix=["Loss:", dict(value=0)]) as t:
@@ -29,13 +31,16 @@ def train_language_model(model, loss_forward, loss_backward, optimizer, dataload
             forward_loss_value = loss_forward(forward_out, forward_target)
             backward_loss_value = loss_backward(backward_out, backward_target)
 
+            total_loss_value = (forward_loss_value.loss.item() + backward_loss_value.loss.item()) / 2
+            if not np.isfinite(total_loss_value):         
+                continue
+
             forward_loss_value.loss.backward()
             backward_loss_value.loss.backward()
 
-            total_loss_value = (forward_loss_value.loss.item() + backward_loss_value.loss.item()) / 2
-
             losses.append(total_loss_value)
-            t.postfix[1]["value"] = total_loss_value
+            smoothed_loss_value = smoothed_loss_value * (1-eps) + total_loss_value * eps
+            t.postfix[1]["value"] = smoothed_loss_value
             t.update()
 
             optimizer.step()

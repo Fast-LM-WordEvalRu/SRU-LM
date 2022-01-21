@@ -67,16 +67,19 @@ class TextTransformer:
         numbers = set('0123456789')
 
         for i in range(2000):
-            if re.match(r'[a-zA-Z]', chr(i)):
+#            if re.match(r'[a-zA-Z]', chr(i)):
+            if re.match(r'[a-z]', chr(i)):
                 latin.add(chr(i))
-            elif re.match(r'[а-яА-ЯёЁ]', chr(i)):
+            elif re.match(r'[а-яё]', chr(i)):
+#            elif re.match(r'[а-яА-ЯёЁ]', chr(i)):
                 cyrillic.add(chr(i))
 
-        assert len(cyrillic) == 66
-        assert len(latin) == 52
+#        assert len(cyrillic) == 66
+#        assert len(latin) == 52
 
-        # приводим к списку и сортируем. Это нужно для воспроизводимости
+         приводим к списку и сортируем. Это нужно для воспроизводимости
         model_chars = cyrillic | latin | punctuation | numbers
+#        model_chars = cyrillic | latin | numbers
         model_chars = list(model_chars)
         model_chars.sort()
 
@@ -94,3 +97,4 @@ class TextTransformer:
         shift = max(model_char_dict.values()) + 1
         model_char_dict.update({c: i + shift for i, c in enumerate(model_chars)})
         return model_char_dict
+

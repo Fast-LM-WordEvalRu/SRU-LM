@@ -49,7 +49,6 @@ class Highway(torch.nn.Module):
             # of the bias vector in each Linear layer.
             layer.bias[input_dim:].data.fill_(1)
 
-    @overrides
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         current_input = inputs
         for layer in self._layers:
@@ -62,3 +61,4 @@ class Highway(torch.nn.Module):
             gate = torch.sigmoid(gate)
             current_input = gate * linear_part + (1 - gate) * nonlinear_part
         return current_input
+

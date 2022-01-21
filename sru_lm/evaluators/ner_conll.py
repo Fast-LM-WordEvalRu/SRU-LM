@@ -48,6 +48,7 @@ class EvaluatorNER:
 
     def train(self):
         self.head.train()
+        self.lm_model.eval()
         history = []
         for epoch in trange(self.train_epochs, desc='NER Train Epochs', leave=False):
             losses = []
@@ -74,6 +75,7 @@ class EvaluatorNER:
 
     def evaluate(self):
         self.head.eval()
+        self.lm_model.eval()
         with torch.no_grad():
             for batch in tqdm(self.test_dataloader, desc='NER eval batch', leave=False):
                 for key in batch.keys():
