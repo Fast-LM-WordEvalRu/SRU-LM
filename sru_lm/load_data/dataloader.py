@@ -33,11 +33,11 @@ class SequencePadder:
 
 
 
-def get_dataloader(dataset, word_dict, bidirectional=False, batch_size=None):
+def get_dataloader(dataset, word_dict, batch_size, num_workers, pin_memory, bidirectional=False):
     if batch_size is None:
         batch_size = default_batch_size
     dataloader = DataLoader(dataset, batch_size=batch_size,
-                            shuffle=True, num_workers=8,
+                            shuffle=True, num_workers=num_workers, pin_memory=pin_memory
                             collate_fn=SequencePadder(padding_value=word_dict['<PAD>'], bidirectional=bidirectional))
 
     return dataloader
