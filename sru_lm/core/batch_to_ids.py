@@ -73,10 +73,8 @@ class TextTransformer:
             elif re.match(r'[а-яё]', chr(i)):
 #            elif re.match(r'[а-яА-ЯёЁ]', chr(i)):
                 cyrillic.add(chr(i))
-
 #        assert len(cyrillic) == 66
 #        assert len(latin) == 52
-
         # приводим к списку и сортируем. Это нужно для воспроизводимости
         model_chars = cyrillic | latin | punctuation | numbers
 #        model_chars = cyrillic | latin | numbers
