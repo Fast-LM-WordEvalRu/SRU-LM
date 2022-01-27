@@ -37,7 +37,7 @@ def get_dataloader(dataset, word_dict, batch_size, num_workers, pin_memory, bidi
     if batch_size is None:
         batch_size = default_batch_size
     dataloader = DataLoader(dataset, batch_size=batch_size,
-                            shuffle=True, num_workers=num_workers, pin_memory=pin_memory
+                            shuffle=True, num_workers=num_workers, pin_memory=pin_memory,
                             collate_fn=SequencePadder(padding_value=word_dict['<PAD>'], bidirectional=bidirectional))
 
     return dataloader
