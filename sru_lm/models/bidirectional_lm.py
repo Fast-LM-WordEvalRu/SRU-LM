@@ -26,7 +26,8 @@ class BidirectionalLM(torch.nn.Module):
         forward_out = self.forward_lm(ids, mask, encoded_chars)
         index = torch.LongTensor(
             [list(range(s, -1, -1)) + list(range(s + 1, encoded_chars.shape[1])) for s in mask.sum(1)]).unsqueeze(2)
-        backward_encoded_chars = torch.take_along_dim(encoded_chars, index.to(encoded_chars.device), dim=1)
+        index = index.to(encoded_chars.device)
+        backward_encoded_chars = torch.take_along_dim(encoded_chars, index, dim=1)
         backward_out = self.backward_lm(ids, mask, backward_encoded_chars)
         backward_out = torch.take_along_dim(backward_out, index, dim=1)
 
