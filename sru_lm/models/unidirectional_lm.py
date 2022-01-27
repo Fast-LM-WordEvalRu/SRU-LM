@@ -43,10 +43,11 @@ class UnidirectionalLM(nn.Module):
             )
         self.model_params = model_params
 
-    def forward(self, ids, mask):
+    def forward(self, ids, mask, encoded_chars=None):
         batch_size = ids.shape[0]
-        if self.sru:
+        if encoded_chars is None:
             encoded_chars = self.char_embedder(ids)
+        if self.sru:
             encoded_chars = encoded_chars.permute(1, 0, 2)
             inverted_mask = ~mask
             inverted_mask = inverted_mask.T
@@ -60,7 +61,6 @@ class UnidirectionalLM(nn.Module):
 
             return lm_out.permute(1, 0, 2)
         else:
-            encoded_chars = self.char_embedder(ids)
             # lens = mask.sum(dim=1)
             # encoded_chars = nn.utils.rnn.pack_padded_sequence(encoded_chars, lens, batch_first=True)
             lstm_out, _ = self._language_model(encoded_chars)

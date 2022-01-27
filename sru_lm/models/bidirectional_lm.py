@@ -13,25 +13,22 @@ class BidirectionalLM(torch.nn.Module):
             model_params=model_params
         )
 
-        char_embedder = self.forward_lm.char_embedder
+        # char_embedder = self.forward_lm.char_embedder
         self.backward_lm = UnidirectionalLM(
-            char_embedder=char_embedder,
+            char_embedder=False,  # костыль, чтобы не инициализовать
             sru=sru,
             char_embedder_params=char_embedder_params,
             model_params=model_params
         )
 
     def forward(self, ids, mask, return_embeddings=False, **kwargs):
-        forward_out = self.forward_lm(ids, mask)
-        
-        backward_ids = torch.nn.utils.rnn.pad_sequence(
-            [pline[torch.arange(s+1).flip(0)] for s, pline in zip(mask.sum(1), ids)],
-            batch_first=True)
-
-        backward_out = self.backward_lm(backward_ids, mask)
-        backward_out = torch.nn.utils.rnn.pad_sequence(
-            [pline[torch.arange(s+1).flip(0)] for s, pline in zip(mask.sum(1), backward_out)],
-            batch_first=True)
+        encoded_chars = self.forward_lm.char_embedder(ids)
+        forward_out = self.forward_lm(ids, mask, encoded_chars)
+        index = torch.LongTensor(
+            [list(range(s, -1, -1)) + list(range(s + 1, v1.shape[1])) for s in batch['mask'].sum(1)]).unsqueeze(2)
+        backward_encoded_chars = torch.take_along_dim(encoded_chars, index.to(encoded_chars.device), dim=1)
+        backward_out = self.backward_lm(backward_ids, mask, backward_encoded_chars)
+        backward_out = torch.take_along_dim(backward_out, index, dim=1)
 
         if return_embeddings:
             return torch.cat([forward_out, backward_out], dim=2)

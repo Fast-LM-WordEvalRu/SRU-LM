@@ -77,7 +77,7 @@ class TextTransformer:
 #        assert len(cyrillic) == 66
 #        assert len(latin) == 52
 
-         приводим к списку и сортируем. Это нужно для воспроизводимости
+#          приводим к списку и сортируем. Это нужно для воспроизводимости
         model_chars = cyrillic | latin | punctuation | numbers
 #        model_chars = cyrillic | latin | numbers
         model_chars = list(model_chars)
