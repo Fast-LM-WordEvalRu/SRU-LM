@@ -23,7 +23,9 @@ batch_size = 32
 
 sru_model_params = {
     'n_layers': 8,
-    'output_dim': 512
+    'output_dim': 512,
+    'dropout': 0.,
+    'rnn_dropout': 0.,
 }
 
 lstm_model_params = {
