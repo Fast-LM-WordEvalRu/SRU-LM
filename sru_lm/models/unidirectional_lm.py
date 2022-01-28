@@ -29,7 +29,9 @@ class UnidirectionalLM(nn.Module):
                 input_size=model_params['output_dim'],
                 hidden_size=model_params['output_dim'],
                 use_tanh=True,
-                num_layers=model_params['n_layers']
+                num_layers=model_params['n_layers'],
+                dropout=model_params['dropout'],
+                rnn_dropout=model_params['rnn_dropout'],
             )
         else:
             if model_params is None:
