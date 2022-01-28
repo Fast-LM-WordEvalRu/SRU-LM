@@ -43,20 +43,13 @@ class UnidirectionalLM(nn.Module):
         self.model_params = model_params
 
     def forward(self, ids, mask, encoded_chars=None):
-        batch_size = ids.shape[0]
         if encoded_chars is None:
             encoded_chars = self.char_embedder(ids)
         if self.sru:
             encoded_chars = encoded_chars.permute(1, 0, 2)
             inverted_mask = ~mask
             inverted_mask = inverted_mask.T
-
-            hidden = next(self._language_model.parameters()).data.new(self.model_params['n_layers'],
-                                                                      batch_size, self.model_params['output_dim']).zero_()
-            hidden = hidden.type_as(encoded_chars)
-
-            lm_out, hidden = self._language_model(encoded_chars, hidden, mask_pad=inverted_mask)
-
+            lm_out, hidden = self._language_model(encoded_chars, mask_pad=inverted_mask)
             return lm_out.permute(1, 0, 2)
         else:
             lstm_out, _ = self._language_model(encoded_chars)
