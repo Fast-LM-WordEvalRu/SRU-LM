@@ -76,6 +76,8 @@ class EvaluatorNER:
     def evaluate(self):
         self.head.eval()
         self.lm_model.eval()
+        all_preds = []
+        all_ground_truth = []
         with torch.no_grad():
             for batch in tqdm(self.test_dataloader, desc='NER eval batch', leave=False):
                 for key in batch.keys():
@@ -87,9 +89,6 @@ class EvaluatorNER:
 
                 embeddings = self.lm_model(ids, mask, return_embeddings=True)
                 out = self.head(embeddings, mask, targets)
-
-                all_preds = []
-                all_ground_truth = []
                 for i, y_pred in enumerate(out):
                     all_preds.append(y_pred)
                     all_ground_truth.append(batch['target'][i, :len(y_pred)].cpu().numpy())
