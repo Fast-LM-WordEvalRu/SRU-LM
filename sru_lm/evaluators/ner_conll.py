@@ -50,9 +50,9 @@ class EvaluatorNER:
         self.head.train()
         self.lm_model.eval()
         history = []
-        for epoch in trange(self.train_epochs, desc='NER Train Epochs', leave=False):
+        for epoch in range(self.train_epochs):
             losses = []
-            for batch in tqdm(self.train_dataloader, desc='NER train batch', leave=False):
+            for batch in self.train_dataloader:
                 for key in batch.keys():
                     batch[key] = batch[key].cuda()
 
@@ -79,7 +79,7 @@ class EvaluatorNER:
         all_preds = []
         all_ground_truth = []
         with torch.no_grad():
-            for batch in tqdm(self.test_dataloader, desc='NER eval batch', leave=False):
+            for batch in self.test_dataloader:
                 for key in batch.keys():
                     batch[key] = batch[key].cuda()
 
