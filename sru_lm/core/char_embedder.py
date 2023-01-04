@@ -33,7 +33,7 @@ class CharEmbedder(nn.Module):
         for i in range(self.n_char_cnn):
             conv = getattr(self, f'char_cnn_{i}')
             convolved = conv(x)
-            # (batch_size * sequence_length, n_filters for this width)
+            # (batch_size * sequence_length, n_filters for this width)  [64 * 30, 10, 128]
             convolved, _ = torch.max(convolved, dim=-1)
             convolved = nn.functional.relu(convolved)
             convs.append(convolved)
